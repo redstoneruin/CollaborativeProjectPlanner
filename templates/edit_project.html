@@ -1,0 +1,182 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+.dropdown-item {
+   cursor: pointer;
+   transition: ease 0.2s all;
+}
+.dropdown-item:hover {
+   background: #eaeaea;
+}
+.could-not-add {
+   border-radius: 5px;
+   transition: ease 0.2s all;
+}
+</style>
+
+<div class="section" id="vue-target" v-cloak>
+
+   <div v-if="project">
+      <div class="columns">
+
+         <!-- left edit column -->
+         <div class="column">
+ 
+            <h1 class="title">Edit Project</h1>
+            <!-- name input -->
+            <div class="label mt-3">Title</div>
+            <div class="mt-2 has-icons-right control">
+               <input @input="validate_edit_form" 
+               v-model="name"
+               value="name" 
+               type="text"
+               class="input" />
+               <span class="icon is-small is-right">
+                  <i v-if="!name_valid" 
+                  class="fa fa-fw has-text-warning 
+                  fa-exclamation-triangle"></i>
+                  <i v-else class="fa fa-fw has-text-success
+                  fa-check"></i>
+               </span>
+            </div>
+
+            <!-- description input -->
+            <div class="label mt-4">Description</div>
+            <div class="mt-2 has-icons-right control">
+               <input @input="validate_edit_form" 
+               v-model="desc"
+               value="desc"
+               type="text"
+               class="input" />
+               <span class="icon is-small is-right">
+                  <i v-if="!desc_valid" 
+                  class="fa fa-fw has-text-warning 
+                  fa-exclamation-triangle"></i>
+                  <i v-else class="fa fa-fw has-text-success
+                  fa-check"></i>
+               </span>
+            </div>
+
+            <!-- buttons for cancel and submit -->
+            <div class="level">
+               <div class="level-left">
+                  <div class="button has-background-success has-text-white mr-3 my-3"
+                     @click="edit_project">
+                     <i class="fa fa-fw fa-check"></i>
+                  </div>
+                  <div class="button has-background-danger has-text-white mr-3 my-3"
+                     @click="redirect_to_project">
+                     <i class="fa fa-fw fa-times"></i>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- right membership column -->
+         <div class="column">
+            <h1 class="title">Members</h1>
+
+            <!-- table of current members -->
+            <table class="table is-striped is-fullwidth">
+               <thead>
+                  <th>Email</th>
+                  <th>Permissions</th>
+               </thead>
+               <tbody>
+                  <tr v-for="member in members">
+                     <td>{{member.email}}</td>
+                     <td>{{get_perm_name(member.permissions)}}</td>
+                  </tr>
+            </table>
+
+            <!-- add member stuff -->
+            <div v-if="!adding_member" 
+               class="button has-background-success
+               has-text-white"
+               @click="set_adding_member(true)">
+               <i class="fa fa-fw fa-plus"></i>
+            </div>
+            <div v-else>
+               <div class="level">
+               </div>
+              
+               <!-- add member form -->
+               <div class="label mt-4">Add Member by Email</div> 
+               <div class="my-2 control">
+                  <input v-model="member_email"
+                     type="text"
+                     class="input" />
+               </div>
+               <div v-if="could_not_add_member" class="level p-2
+                  has-background-danger has-text-white
+                  could-not-add">
+                  Could not add member, check inputs
+               </div>
+               <!-- permissions dropdown -->
+               <div class="dropdown is-active">
+                 <div class="dropdown-trigger">
+                   <button class="button" aria-haspopup="true"
+                     aria-controls="dropdown-menu"
+                     @click="toggle_dropdown">
+                     <span>{{member_permissions_name}}</span>
+                     <span class="icon is-small">
+                       <i class="fa fa-fw fa-angle-down" aria-hidden="true"></i>
+                     </span>
+                   </button>
+                 </div>
+                 <div v-if="dropdown_expanded"
+                     class="dropdown-menu" id="dropdown-menu" role="menu">
+                   <div class="dropdown-content">
+                     <div class="dropdown-item"
+                        @click="set_permissions(2)">
+                        Admin
+                     </div>
+                     <div class="dropdown-item"
+                        @click="set_permissions(1)">
+                       Planner
+                     </div>
+                     <div class="dropdown-item"
+                        @click="set_permissions(0)">
+                       Member
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               <!-- member submit buttons -->
+               <div class="button has-background-success
+                  has-text-white"
+                  @click="add_member">
+                  <i class="fa fa-fw fa-check"></i>
+               </div>
+               <div class="button has-background-danger
+                  has-text-white"
+                  @click="cancel_member_add">
+                  <i class="fa fa-fw fa-times"></i>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div v-else>
+      <!-- progress bar in the case that project is still loading -->       
+      <progress class="progress is-medium is-primary mx-6" max="100"></progress>
+   </div>
+</div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+   let load_project_url = "[[=XML(load_project_url)]]";
+   let get_app_name_url = "[[=XML(get_app_name_url)]]";
+   let load_project_members_url = "[[=XML(load_project_members_url)]]";
+   let get_user_email_url = "[[=XML(get_user_email_url)]]";
+   let add_member_url = "[[=XML(add_member_url)]]";
+   let edit_project_info_url = "[[=XML(edit_project_info_url)]]";
+</script>
+<script src="js/edit_project.js"></script>
+[[end]]

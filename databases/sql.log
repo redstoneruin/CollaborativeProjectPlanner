@@ -1,0 +1,607 @@
+timestamp: 2021-05-06T09:00:58.441151
+CREATE TABLE "py4web_session"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "rkey" CHAR(512),
+    "rvalue" TEXT,
+    "expiration" INTEGER,
+    "created_on" TIMESTAMP,
+    "expires_on" TIMESTAMP
+);
+success!
+timestamp: 2021-05-06T09:00:58.450205
+CREATE TABLE "auth_user"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "email" CHAR(512) UNIQUE,
+    "password" CHAR(512),
+    "first_name" CHAR(512),
+    "last_name" CHAR(512),
+    "sso_id" CHAR(512),
+    "action_token" CHAR(512),
+    "last_password_change" TIMESTAMP,
+    "past_passwords_hash" TEXT
+);
+success!
+timestamp: 2021-05-06T09:00:58.457531
+CREATE TABLE "auth_user_tag_groups"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "path" CHAR(512),
+    "record_id" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE  
+);
+success!
+timestamp: 2021-05-06T09:36:29.204651
+CREATE TABLE "project"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_name" CHAR(512),
+    "project_description" CHAR(512),
+    "owner" CHAR(512),
+    "created_time" TIMESTAMP
+);
+success!
+timestamp: 2021-05-06T10:18:53.479900
+CREATE TABLE "member"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "member" CHAR(512),
+    "member_since" TIMESTAMP,
+    "permissions" INTEGER
+);
+success!
+timestamp: 2021-05-06T10:18:53.487776
+CREATE TABLE "release"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" TIMESTAMP,
+    "due_date" TIMESTAMP
+);
+success!
+timestamp: 2021-05-06T10:18:53.495510
+CREATE TABLE "task"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "release_id" INTEGER REFERENCES "release" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" TIMESTAMP,
+    "due_date" TIMESTAMP,
+    "data" CHAR(512)
+);
+success!
+timestamp: 2021-05-06T10:18:53.503439
+CREATE TABLE "subtask"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "task_id" INTEGER REFERENCES "task" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" TIMESTAMP,
+    "due_date" TIMESTAMP,
+    "data" CHAR(512)
+);
+success!
+timestamp: 2021-05-06T10:18:53.510746
+CREATE TABLE "task_comment"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "task_id" INTEGER REFERENCES "task" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" CHAR(512),
+    "data" CHAR(512)
+);
+success!
+timestamp: 2021-05-06T10:19:10.611642
+CREATE TABLE "tag"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "name" CHAR(512)
+);
+success!
+timestamp: 2021-05-06T10:20:07.156329
+CREATE TABLE "task_tag"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "task_id" INTEGER REFERENCES "task" ("id") ON DELETE CASCADE  ,
+    "added_by" CHAR(512),
+    "added_time" CHAR(512),
+    "tag" INTEGER REFERENCES "tag" ("id") ON DELETE CASCADE  
+);
+success!
+timestamp: 2021-05-06T10:20:07.164227
+CREATE TABLE "subtask_tag"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "subtask_id" INTEGER REFERENCES "subtask" ("id") ON DELETE CASCADE  ,
+    "added_by" CHAR(512),
+    "added_time" CHAR(512),
+    "tag" INTEGER REFERENCES "tag" ("id") ON DELETE CASCADE  
+);
+success!
+timestamp: 2021-05-06T10:23:54.305541
+ALTER TABLE "project" ADD "owner_id" CHAR(512);
+success!
+timestamp: 2021-05-06T10:23:54.311352
+ALTER TABLE "member" ADD "member_id" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE  ;
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-05-13T11:10:07.338637
+ALTER TABLE "project" ADD "project_desc" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-05-14T14:41:51.132441
+ALTER TABLE "release" ADD "release_name" CHAR(512);
+success!
+timestamp: 2021-05-14T14:41:51.147319
+ALTER TABLE "task" ADD "task_name" CHAR(512);
+success!
+timestamp: 2021-05-14T14:41:51.163096
+ALTER TABLE "subtask" ADD "subtask_name" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+DROP TABLE "release";
+success!
+success!
+success!
+timestamp: 2021-05-14T14:48:27.703469
+CREATE TABLE "release"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" TIMESTAMP,
+    "release_name" CHAR(512),
+    "due_date" DATE
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-05-14T19:32:21.897876
+ALTER TABLE "task" ADD "desc" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+DROP TABLE "member";
+success!
+success!
+success!
+timestamp: 2021-05-21T11:43:41.509392
+CREATE TABLE "member"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "member_id" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE  ,
+    "member_since" TIMESTAMP,
+    "permissions" INTEGER
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+DROP TABLE "member";
+success!
+success!
+success!
+timestamp: 2021-05-21T12:02:37.474574
+CREATE TABLE "member"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER REFERENCES "project" ("id") ON DELETE CASCADE  ,
+    "member_id" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE  ,
+    "member_since" TIMESTAMP,
+    "permissions" INTEGER
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!

@@ -1,0 +1,102 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+.project-card {
+   cursor: pointer;
+   transition: ease 0.2s all;
+}
+.project-card:hover {
+   background: #eaeaea;
+}
+</style>
+
+
+<div class="section" id="vue-target" v-cloak>
+  <!-- Put here your Vue.js template -->
+   <span class="level">
+      <p class="title">Dashboard</p>
+   </span>
+
+   <div class="level">
+      <a class="button has-background-success has-text-white mr-3 my-3"
+         href="[[=URL('create', signer=url_signer)]]">
+         <i class="fa fa-fw fa-plus"></i>
+         Create Project
+      </a>
+      <!-- search bar -->
+      <span class="field level-item">
+         <div class="control has-icons-right" style="width:100%">
+            <input class="input" type="text" placeholder="Search" />
+            <span class="icon is-small is-right">
+               <i class="fa fa-fw fa-search"></i>
+            </span>
+         </div>
+      </span> 
+   </div>
+
+
+   <span>
+      <p class="is-size-4">Your Projects</p>
+   </span>
+
+   <!-- Columns for each project owned -->
+   <div class="columns mt-3 testclass">
+      <div v-for="project in myprojects" class="column">
+         <div class="card pt-3 project-card" @click="redirect_to_project(project.id)">
+            <div class="card-header-title mx-2">
+               {{project.project_name}}
+            </div>
+            <div class="card-content pt-2">
+               <div v-if="project.project_desc" class="content">
+                  {{project.project_desc}}
+               </div>
+               <div v-else class="content has-text-grey is-italic">
+                  No description.
+               </div>
+            </div>
+         </div>
+
+      </div>
+   </div>
+
+   <div v-if="memberprojects.length">
+      <span>
+         <p class="is-size-4">Member Projects</p>
+      </span>
+
+      <!-- Columns for each project owned -->
+      <div class="columns mt-3 testclass">
+         <div v-for="project in memberprojects" class="column">
+            <div class="card pt-3 project-card" @click="redirect_to_project(project.id)">
+               <div class="card-header-title mx-2">
+                  {{project.project_name}}
+               </div>
+               <div class="card-content pt-2">
+                  <div v-if="project.project_desc" class="content">
+                     {{project.project_desc}}
+                  </div>
+                  <div v-else class="content has-text-grey is-italic">
+                     No description.
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </div>
+   </div>
+
+</div>
+
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  let load_my_projects_url = "[[=XML(load_my_projects_url)]]";
+  let load_member_projects_url = "[[=XML(load_member_projects_url)]]";
+  let get_app_name_url = "[[=XML(get_app_name_url)]]";
+</script>
+<script src="js/index.js"></script>
+[[end]]

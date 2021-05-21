@@ -1,0 +1,257 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+.input-warning {
+   border-radius: 5px;
+}
+.task-card {
+   cursor: pointer;
+   transition: ease 0.2s all;
+}
+.task-card:hover {
+   background: #eaeaea;
+}
+.caret {
+   cursor: pointer;
+}
+</style>
+
+<div class="section" id="vue-target" v-cloak>
+   
+   <div v-if="project == null">
+      <progress class="progress is-medium is-primary mx-6" max="100">15%</progress>
+   </div>
+   <div v-else>
+      <div class="level">
+         <h1 class="title">{{project.project_name}}</h1>
+
+         <!-- edit button -->      
+         <div class="button has-background-warning has-text-white mr-3 my-3"
+            @click="redirect_to_edit">
+            <i class="fa fa-fw fa-cog"></i>
+         </div>
+      </div>
+      <div class="columns m-3">
+         <div v-for="release in releases"
+            class="column is-one-quarter">
+            
+            <!-- card to display releases -->
+            <div class="card">
+               <!-- need to display tasks inside the card -->
+               <div class="card-header has-icons-right">
+                  <div class="card-header-title mx-2">
+                     {{release.release_name}}
+                  </div>
+                  <span class="m-2 icon is-small is-right caret">
+                     <i v-if="release._expanded"
+                        class="fa fa-fw fa-caret-down"
+                        @click="toggle_expanded(release._idx)"></i>
+                     <i v-else
+                        class="fa fa-fw fa-caret-right"
+                        @click="toggle_expanded(release._idx)"></i>
+                  </span>
+               </div>
+
+               <!-- tasks -->
+               <div v-if="release._expanded" class="m-2">
+                  <div v-if="release._tasks_loaded"
+                     v-for="task in release._tasks"
+                     class="card mb-2 task-card">
+                     <div class="card-header-title pb-0">
+                        {{task.task_name}}
+                     </div>
+                     <div class="card-content">
+                        {{task.desc}}
+                        <progress class="mt-3 progress is-small is-primary" 
+                           max="100" value="0"></progress>
+                     </div>
+                  </div>
+                  <div v-else>
+                     <progress class="progress is-small is-primary" max="100">
+                        15%
+                     </progress>
+                  </div>
+
+                  <!-- adding tasks -->
+                  <div v-if="!release._adding_task"
+                     class="button has-background-success has-text-white mr-3 my-3"
+                     @click="set_adding_task(true, release._idx)">
+                     <i class="fa fa-fw fa-plus"></i>
+                     Add Task
+                  </div>
+
+                  <div v-else class="card">
+                  
+                  <div class="card-header">
+                     <div class="card-header-title">Add a Task</div>
+                  </div>
+                  <div class="p-3 pt-5">
+                     <!-- edit form -->
+                     <div class="has-icons-right control">
+                        <input v-on:input="validate_task_form(release._idx)"  
+                           v-model="release._new_task_name" 
+                           placeholder="Task name"
+                           class="input"/>
+                        <span v-if="!name_valid" class="icon is-small is-right">
+                           <i v-if="!release._task_name_valid"
+                           class="fa fa-fw has-text-warning 
+                           fa-exclamation-triangle"></i>
+                           <i v-else class="fa fa-fw has-text-success
+                           fa-check"></i>
+                        </span>
+                     </div>
+
+                     <div class="mt-3 has-icons-right control">
+                        <textarea v-on:input="validate_task_form(release._idx)" 
+                        v-model="release._new_task_desc" 
+                        placeholder="Task Description" 
+                        class="textarea"></textarea>
+                        <span class="icon is-small is-right">
+                           <i v-if="!release._task_desc_valid" 
+                           class="fa fa-fw has-text-warning 
+                           fa-exclamation-triangle"></i>
+                           <i v-else class="fa fa-fw has-text-success
+                           fa-check"></i>
+                        </span>
+                     </div>
+
+                     <div class="mt-3 has-icons-right control">
+                        <input v-on:input="validate_task_form(release._idx)" 
+                        v-model="release._new_task_duedate" 
+                        type="date"
+                        class="input" />
+                        <span class="icon is-small is-right">
+                           <i v-if="!release._task_duedate_valid" 
+                           class="fa fa-fw has-text-warning 
+                           fa-exclamation-triangle"></i>
+                           <i v-else class="fa fa-fw has-text-success
+                           fa-check"></i>
+                        </span>
+                     </div>
+
+                     <div>
+                     </div>
+
+                     <div v-if="release._warn_check_inputs" 
+                        class="level input-warning 
+                        has-text-white has-background-danger">
+                        <div class="level-item">
+                           <p>Check Inputs</p>
+                        </div>
+                     </div>
+
+                     <div class="level">
+                        <div class="level-left">
+                           <div class="button has-background-success has-text-white mr-3 my-3"
+                              @click="submit_new_task(release._idx)">
+                              <i class="fa fa-fw fa-check"></i>
+                           </div>
+                           <div class="button has-background-danger has-text-white mr-3 my-3"
+                              @click="cancel_task_add(release._idx)">
+                              <i class="fa fa-fw fa-times"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               </div>
+               
+               <div class="card-footer">
+                  <div class="card-footer-item m-3">
+                     Due {{(new Date(release.due_date)).toLocaleDateString()}}
+                  </div>
+               </div>
+            </div>
+                        
+         </div>
+            
+         <!-- add button, visible if not currently adding --->
+         <div class="column">    
+            <div v-if="!adding_release" 
+               class="button has-background-success has-text-white mr-3 my-3"
+               @click="set_adding_release(true)">
+               <i class="fa fa-fw fa-plus"></i>
+               Add Release
+            </div>
+
+            <div v-else class="card">
+                  
+                  <div class="card-header">
+                     <div class="card-header-title">Add a Release</div>
+                  </div>
+                  <div class="p-3 pt-5">
+                     <!-- edit form -->
+                     <div class="has-icons-right control">
+                        <input v-on:input="validate_release_form"  
+                           v-model="new_release_name" 
+                           placeholder="Release name"
+                           class="input"/>
+                        <span v-if="!name_valid" class="icon is-small is-right">
+                           <i class="fa fa-fw has-text-warning 
+                           fa-exclamation-triangle"></i>
+                        </span>
+                        <span v-else class="icon is-small is-right">
+                           <i class="fa fa-fw has-text-success
+                           fa-check"></i>
+                        </span>
+
+                     </div>
+                     <div class="mt-3 has-icons-right control">
+                        <input v-on:input="validate_release_form" 
+                        v-model="new_release_duedate" 
+                        type="date"
+                        class="input" />
+                        <span v-if="!duedate_valid" class="icon is-small is-right">
+                           <i class="fa fa-fw has-text-warning 
+                           fa-exclamation-triangle"></i>
+                        </span>
+                        <span v-else class="icon is-small is-right">
+                           <i class="fa fa-fw has-text-success
+                           fa-check"></i>
+                        </span>
+                     </div>
+
+                     <div>
+                     </div>
+
+                     <div v-if="warn_check_inputs" 
+                        class="level input-warning has-text-white has-background-danger">
+                        <div class="level-item">
+                           <p>Check Inputs</p>
+                        </div>
+                     </div>
+
+                     <div class="level">
+                        <div class="level-left">
+                           <div class="button has-background-success has-text-white mr-3 my-3"
+                              @click="submit_new_release">
+                              <i class="fa fa-fw fa-check"></i>
+                           </div>
+                           <div class="button has-background-danger has-text-white mr-3 my-3"
+                              @click="cancel_release_add">
+                              <i class="fa fa-fw fa-times"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  let load_project_url = "[[=XML(load_project_url)]]";
+  let create_release_url = "[[=XML(create_release_url)]]";
+  let load_tasks_url = "[[=XML(load_tasks_url)]]";
+  let create_task_url = "[[=XML(create_task_url)]]";
+  let get_app_name_url = "[[=XML(get_app_name_url)]]";
+</script>
+<script src="js/project.js"></script>
+[[end]]
