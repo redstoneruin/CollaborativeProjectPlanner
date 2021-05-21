@@ -42,6 +42,10 @@
       <p class="is-size-4">Your Projects</p>
    </span>
 
+   <div v-if="!myprojects.length" class="mt-2 has-text-grey is-italic">
+      No projects.
+   </div>
+
    <!-- Columns for each project owned -->
    <div class="columns mt-3 testclass">
       <div v-for="project in myprojects" class="column">
