@@ -68,6 +68,16 @@
                         <progress class="mt-3 progress is-small is-primary" 
                            max="100" value="0"></progress>
                      </div>
+                     <div class="card-footer 
+                        is-justify-content-flex-end">
+                        <!-- delete task button -->
+                        <div class="button p-2 m-2 
+                           has-background-danger 
+                           has-text-white"
+                           @click="delete_task(release._idx, task.id)">
+                           <i class="fa fa-fw fa-trash"></i>
+                        </div>
+                     </div>
                   </div>
                   <div v-else>
                      <progress class="progress is-small is-primary" max="100">
@@ -75,7 +85,7 @@
                      </progress>
                   </div>
 
-                  <!-- adding tasks -->
+                  <!-- add task button -->
                   <div v-if="!release._adding_task"
                      class="button has-background-success has-text-white mr-3 my-3"
                      @click="set_adding_task(true, release._idx)">
@@ -252,6 +262,7 @@
   let load_tasks_url = "[[=XML(load_tasks_url)]]";
   let create_task_url = "[[=XML(create_task_url)]]";
   let get_app_name_url = "[[=XML(get_app_name_url)]]";
+  let delete_task_url = "[[=XML(delete_task_url)]]";
 </script>
 <script src="js/project.js"></script>
 [[end]]

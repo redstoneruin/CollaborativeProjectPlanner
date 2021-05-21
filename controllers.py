@@ -100,6 +100,7 @@ def project(project_id = None):
          load_tasks_url = URL('load_tasks', signer=url_signer),
          create_task_url = URL('create_task', signer=url_signer),
          get_app_name_url = URL('get_app_name', signer=url_signer),
+         delete_task_url = URL('delete_task', signer=url_signer)
       )
    else:
       redirect(URL('index'))
@@ -289,6 +290,15 @@ def create_task():
    )
    created=True
    return dict(created=created)
+
+@action('delete_task', method=["POST"])
+@action.uses(auth, auth.user, url_signer.verify())
+def delete_task():
+   assert request.json.get('task_id') is not None
+
+   db(db.task.id == request.json.get('task_id')).delete()
+
+   return dict(deleted=True)
 
 # simple function to get the current app name for javascript redirects
 @action('get_app_name', method=["GET"])

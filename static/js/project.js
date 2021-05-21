@@ -83,6 +83,8 @@ let init = (app) => {
       } else {
          app.vue.releases[idx]._task_desc_valid = false;
       }
+
+      app.vue.releases[idx]._task_duedate_valid = true;
     }
 
     app.validate_release_form = () => {
@@ -195,6 +197,13 @@ let init = (app) => {
         });
     };
 
+    app.delete_task = (idx, task_id) => {
+      axios.post(delete_task_url, {task_id: task_id})
+         .then(function(response) {
+            app.load_tasks(idx);
+         });
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
@@ -210,6 +219,8 @@ let init = (app) => {
         submit_new_task: app.submit_new_task,
         cancel_task_add: app.cancel_task_add,
         
+        delete_task: app.delete_task,
+
         load_tasks: app.load_tasks,
         release_watcher: app.release_watcher,
 
