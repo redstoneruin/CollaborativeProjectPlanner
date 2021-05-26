@@ -68,7 +68,8 @@ db.define_table(
    Field('created_time', 'datetime', default=get_time),
    Field('subtask_name', requires=IS_NOT_EMPTY()),
    Field('due_date', 'date'),
-   Field('data', requires=IS_NOT_EMPTY())
+   Field('done', 'boolean', default=False),
+   Field('desc', requires=IS_NOT_EMPTY())
 )
 
 # intially comments only on tasks, can update to subtasks later

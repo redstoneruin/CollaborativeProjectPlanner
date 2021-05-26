@@ -6,10 +6,111 @@
 }
 </style>
 
-<div v-if="task" class="section" id="vue-target" v-cloak>
-   <div class="card">
-      <h1 class="card-header-title">{{task.task_name}}</h1>
-      <div class="card-content">{{task.desc}}</div>
+
+<div class="section" id="vue-target" v-cloak>
+   
+   <div v-if="!task">
+      <progress class="progress is-medium is-primary mx-6" max="100"></progress>
+   </div>
+   <div v-else>
+      <div class="card">
+         <h1 class="card-header-title">{{task.task_name}}</h1>
+         <div class="card-content">{{task.desc}}</div>
+      </div>
+
+      <!-- list of subtasks -->
+      <div v-for="subtask in subtasks" class="card mt-3">
+         <div class="card-header-title">{{subtask.subtask_name}}</div>
+         <div class="card-content">{{subtask.desc}}</div>
+      </div>
+
+      <!-- add subtask button -->
+      <div v-if="!adding_subtask" 
+         class="button has-background-success has-text-white mr-3 my-3"
+         @click="set_adding_subtask(true)">
+         <i class="fa fa-fw fa-plus"></i>
+         Add Subtask
+      </div>
+
+
+      <div v-else class="card mt-3">
+         <!-- add subtask form -->
+         <div class="card-header">
+            <div class="card-header-title">Add a Subtask</div>
+         </div>
+         <div class="p-3 pt-5">
+            <!-- edit form -->
+            <div class="has-icons-right control">
+               <input v-on:input="validate_subtask"  
+                  v-model="subtask_name" 
+                  placeholder="Task name"
+                  class="input"/>
+               <span v-if="!name_valid" class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-warning 
+                  fa-exclamation-triangle"></i>
+               </span>
+               <span v-else class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-success
+                  fa-check"></i>
+               </span>
+            </div>
+
+            <!-- edit form -->
+            <div class="mt-3 has-icons-right control">
+               <input v-on:input="validate_subtask"  
+                  v-model="subtask_desc" 
+                  placeholder="Description"
+                  class="input"/>
+               <span v-if="!desc_valid" class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-warning 
+                  fa-exclamation-triangle"></i>
+               </span>
+               <span v-else class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-success
+                  fa-check"></i>
+               </span>
+            </div>
+
+            <div class="mt-3 has-icons-right control">
+               <input v-on:input="validate_subtask" 
+               v-model="subtask_duedate" 
+               type="date"
+               class="input" />
+               <span v-if="!duedate_valid" class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-warning 
+                  fa-exclamation-triangle"></i>
+               </span>
+               <span v-else class="icon is-small is-right">
+                  <i class="fa fa-fw has-text-success
+                  fa-check"></i>
+               </span>
+            </div>
+
+            <div>
+            </div>
+
+            <div v-if="warn_check_inputs" 
+               class="level input-warning has-text-white has-background-danger">
+               <div class="level-item">
+                  <p>Check Inputs</p>
+               </div>
+            </div>
+
+            <div class="level">
+               <div class="level-left">
+                  <div class="button has-background-success has-text-white mr-3 my-3"
+                     @click="submit_new_subtask">
+                     <i class="fa fa-fw fa-check"></i>
+                  </div>
+                  <div class="button has-background-danger has-text-white mr-3 my-3"
+                     @click="cancel_adding_subtask">
+                     <i class="fa fa-fw fa-times"></i>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </div>
    </div>
 </div>
 
@@ -17,6 +118,7 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
    let load_task_url = "[[=XML(load_task_url)]]";
+   let add_subtask_url = "[[=XML(add_subtask_url)]]";
 </script>
 <script src="js/task.js"></script>
 [[end]]

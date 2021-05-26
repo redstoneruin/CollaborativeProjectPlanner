@@ -167,7 +167,8 @@ def task(task_id=None):
 
    if has_access:
       return dict(
-         load_task_url = URL('load_task', task_id, signer=url_signer)
+         load_task_url = URL('load_task', task_id, signer=url_signer),
+         add_subtask_url = URL('add_subtask', task_id, signer=url_signer)
       )
 
 
@@ -183,6 +184,36 @@ def load_task(task_id=None):
 
    return dict(task=task, subtasks=subtasks)
 
+
+@action('load_task/<task_id:int>', method=["GET"])
+@action.uses(auth, auth.user, url_signer.verify())
+def load_task(task_id=None):
+   assert task_id is not None
+
+   task = db(db.task.id == task_id).select().as_list()[0]
+   subtasks = db(db.subtask.task_id == task_id).select().as_list()
+
+   return dict(task=task, subtasks=subtasks)
+
+@action('add_subtask/<task_id:int>', method=["POST"])
+@action.uses(auth, auth.user, url_signer.verify())
+def add_subtask(task_id=None):
+   assert task_id is not None
+
+   subtask_name = request.json.get('name')
+   desc = request.json.get('desc')
+   due_date = request.json.get('duedate')
+
+   if(not len(subtask_name)): return dict(added=False)
+
+   db.subtask.insert(
+      task_id=task_id,
+      subtask_name=subtask_name,
+      desc=desc,
+      due_date=due_date
+   )
+
+   return dict(added=True)
 
 @action('edit_project_info/<project_id:int>', method=["POST"])
 @action.uses(db, auth, auth.user, url_signer.verify())

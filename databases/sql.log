@@ -621,3 +621,35 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+timestamp: 2021-05-26T15:15:12.378046
+ALTER TABLE "subtask" ADD "done" CHAR(1);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-05-26T16:45:22.860154
+ALTER TABLE "subtask" ADD "desc" CHAR(512);
+success!
+DROP TABLE "subtask";
+success!
+success!
+success!
+timestamp: 2021-05-26T16:45:34.552514
+CREATE TABLE "subtask"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "task_id" INTEGER REFERENCES "task" ("id") ON DELETE CASCADE  ,
+    "created_by" CHAR(512),
+    "created_time" TIMESTAMP,
+    "subtask_name" CHAR(512),
+    "due_date" DATE,
+    "done" CHAR(1),
+    "desc" CHAR(512)
+);
+success!
