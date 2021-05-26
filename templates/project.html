@@ -12,7 +12,7 @@
    transition: ease 0.2s all;
 }
 .task-card:hover {
-   background: #eaeaea;
+   background: #efefef;
 }
 .caret {
    cursor: pointer;
@@ -59,15 +59,20 @@
                <div v-if="release._expanded" class="m-2">
                   <div v-if="release._tasks_loaded"
                      v-for="task in release._tasks"
-                     class="card mb-2 task-card">
-                     <div class="card-header-title pb-0">
-                        {{task.task_name}}
+                     class="card mb-2">
+
+                     <!-- clickable card div -->
+                     <div class="task-card" @click="redirect_to_task(task.id)">
+                        <div class="card-header-title pb-0">
+                           {{task.task_name}}
+                        </div>
+                        <div class="card-content">
+                           {{task.desc}}
+                           <progress class="mt-4 progress is-small is-primary" 
+                              max="100" value="0"></progress>
+                        </div>
                      </div>
-                     <div class="card-content">
-                        {{task.desc}}
-                        <progress class="mt-3 progress is-small is-primary" 
-                           max="100" value="0"></progress>
-                     </div>
+
                      <div class="card-footer 
                         is-justify-content-flex-end">
                         <!-- delete task button -->

@@ -140,6 +140,49 @@ def edit_project(project_id = None):
    else:
       redirect(URL('index'))
 
+@action('task/<task_id:int>', method=["GET"])
+@action.uses(auth, auth.user, url_signer, 'task.html')
+def task(task_id=None):
+   assert task_id is not None
+
+   task = db.task[task_id]
+   assert task is not None
+   release = db.release[task.release_id]
+   assert release is not None
+   project = db.project[release.project_id]
+   assert project is not None
+
+   user_id = get_user_id()
+   has_access = False
+
+   # determine if user is owner or member of the project
+   if(project.owner_id != user_id):
+      # check whether user is a member
+      members = db(db.member.project_id == project.id).select()
+      for member in members:
+         if member.member_id == user_id:
+            has_access = True
+   else:
+      has_access = True
+
+   if has_access:
+      return dict(
+         load_task_url = URL('load_task', task_id, signer=url_signer)
+      )
+
+
+   redirect(URL('index'))
+
+@action('load_task/<task_id:int>', method=["GET"])
+@action.uses(auth, auth.user, url_signer.verify())
+def load_task(task_id=None):
+   assert task_id is not None
+
+   task = db(db.task.id == task_id).select().as_list()[0]
+   subtasks = db(db.subtask.task_id == task_id).select().as_list()
+
+   return dict(task=task, subtasks=subtasks)
+
 
 @action('edit_project_info/<project_id:int>', method=["POST"])
 @action.uses(db, auth, auth.user, url_signer.verify())
@@ -291,6 +334,7 @@ def create_task():
    created=True
    return dict(created=created)
 
+
 @action('delete_task', method=["POST"])
 @action.uses(auth, auth.user, url_signer.verify())
 def delete_task():
@@ -299,6 +343,9 @@ def delete_task():
    db(db.task.id == request.json.get('task_id')).delete()
 
    return dict(deleted=True)
+
+
+
 
 # simple function to get the current app name for javascript redirects
 @action('get_app_name', method=["GET"])

@@ -197,6 +197,19 @@ let init = (app) => {
         });
     };
 
+    app.redirect_to_task = (task_id) => {
+      axios.get(get_app_name_url).then(function(response) {
+         if(response.data.app_name == '_default') {
+                window.location.href = '/task/' + task_id;
+            } else {
+                window.location.href = '/' 
+                  + response.data.app_name 
+                  + '/task/' 
+                  + task_id;
+            }
+      })
+    }
+
     app.delete_task = (idx, task_id) => {
       axios.post(delete_task_url, {task_id: task_id})
          .then(function(response) {
@@ -225,6 +238,7 @@ let init = (app) => {
         release_watcher: app.release_watcher,
 
         redirect_to_edit: app.redirect_to_edit,
+        redirect_to_task: app.redirect_to_task
     };
 
     // This creates the Vue instance.
