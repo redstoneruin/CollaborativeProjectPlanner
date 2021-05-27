@@ -29,7 +29,7 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, Field, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, get_user_id
+from .models import get_user_email, get_user_id, get_time
 from py4web.utils.form import Form, FormStyleBulma
 from .settings import APP_NAME
 
@@ -100,7 +100,9 @@ def project(project_id = None):
          load_tasks_url = URL('load_tasks', signer=url_signer),
          create_task_url = URL('create_task', signer=url_signer),
          get_app_name_url = URL('get_app_name', signer=url_signer),
-         delete_task_url = URL('delete_task', signer=url_signer)
+         delete_task_url = URL('delete_task', signer=url_signer),
+         set_task_done_url = URL('set_task_done', signer=url_signer),
+         task_done_percent_url = URL('task_done_percent', signer=url_signer)
       )
    else:
       redirect(URL('index'))
@@ -168,12 +170,17 @@ def task(task_id=None):
    if has_access:
       return dict(
          load_task_url = URL('load_task', task_id, signer=url_signer),
-         add_subtask_url = URL('add_subtask', task_id, signer=url_signer)
+         add_subtask_url = URL('add_subtask', task_id, signer=url_signer),
+         set_subtask_done_url = URL('set_subtask_done', signer=url_signer),
+         task_done_percent_url = URL('task_done_percent', signer=url_signer),
+         delete_subtask_url = URL('delete_subtask', signer=url_signer)
       )
 
 
    redirect(URL('index'))
 
+
+# load a single task and subtasks
 @action('load_task/<task_id:int>', method=["GET"])
 @action.uses(auth, auth.user, url_signer.verify())
 def load_task(task_id=None):
@@ -182,18 +189,59 @@ def load_task(task_id=None):
    task = db(db.task.id == task_id).select().as_list()[0]
    subtasks = db(db.subtask.task_id == task_id).select().as_list()
 
+   # decorate task with doneness
+   num_subtasks = len(subtasks)
+   done_sum = 0
+
+   task["done_percent"] = get_done_percent(task["id"], task["done"])
+
    return dict(task=task, subtasks=subtasks)
 
 
-@action('load_task/<task_id:int>', method=["GET"])
+@action('set_task_done', method=["POST"])
 @action.uses(auth, auth.user, url_signer.verify())
-def load_task(task_id=None):
+def set_task_done():
+   task_id = request.json.get('task_id')
    assert task_id is not None
+   done = request.json.get('done')
+   assert done is not None
 
-   task = db(db.task.id == task_id).select().as_list()[0]
-   subtasks = db(db.subtask.task_id == task_id).select().as_list()
+   # update the task
+   db(db.task.id == task_id).update(
+      done=done,
+      done_time=get_time()
+   )
 
-   return dict(task=task, subtasks=subtasks)
+   return dict(updated=True)
+
+@action('set_subtask_done', method=["POST"])
+@action.uses(auth, auth.user, url_signer.verify())
+def set_subtask_done():
+   subtask_id = request.json.get('subtask_id')
+   assert subtask_id is not None
+   done = request.json.get('done')
+   assert done is not None
+
+   # update the subtask
+   db(db.subtask.id == subtask_id).update(
+      done=done,
+      done_time=get_time()
+   )
+
+   return dict(updated=True)
+
+@action('task_done_percent', method=["GET"])
+@action.uses(auth, auth.user, url_signer.verify())
+def task_done_percent():
+   task_id = request.params.get('task_id')
+   assert task_id is not None
+   task = db.task[task_id]
+   assert task is not None
+
+   done_percent = get_done_percent(task_id, task.done)
+
+   return dict(done_percent=done_percent)
+
 
 @action('add_subtask/<task_id:int>', method=["POST"])
 @action.uses(auth, auth.user, url_signer.verify())
@@ -214,6 +262,16 @@ def add_subtask(task_id=None):
    )
 
    return dict(added=True)
+
+@action('delete_subtask', method=["POST"])
+@action.uses(auth, auth.user, url_signer.verify())
+def delete_subtask():
+   subtask_id = request.json.get('subtask_id')
+   assert subtask_id is not None
+
+   db(db.subtask.id == subtask_id).delete()
+
+   return dict(deleted=True)
 
 @action('edit_project_info/<project_id:int>', method=["POST"])
 @action.uses(db, auth, auth.user, url_signer.verify())
@@ -293,10 +351,15 @@ def load_project(project_id = None):
 
    projects = db(db.project.id == project_id).select().as_list()
    
-   if len(projects) == 0: 
+   if not len(projects): 
       return dict(project=None, releases=None)
    
    releases = db(db.release.project_id == project_id).select().as_list()
+
+   # get done percent for each release
+   for release in releases:
+      release["done_percent"] = get_release_done_percent(release["id"])
+
    return dict(project=projects[0], releases=releases)
 
 
@@ -347,7 +410,47 @@ def load_project_members(project_id = None):
 @action.uses(url_signer.verify(), db)
 def load_tasks():
    tasks = db(db.task.release_id == request.params.get('release_id')).select().as_list()
+
+   # decorate with doneness
+   for task in tasks:
+      task["done_percent"] = get_done_percent(task["id"], task["done"])
+
    return dict(tasks=tasks)
+
+def get_done_percent(task_id=None, task_done=None):
+   assert task_id is not None and task_done is not None
+
+   if task_done:
+      return 100
+
+   subtasks = db(db.subtask.task_id == task_id).select()
+   num_subtasks = len(subtasks)
+   done_sum = 0
+
+   if not num_subtasks: return 0
+
+   # add one so if not done, the task progress bar will not be full
+   num_subtasks += 1
+
+   for subtask in subtasks:
+      if subtask.done: done_sum += 1
+
+   return done_sum / num_subtasks * 100
+
+def get_release_done_percent(release_id=None):
+   assert release_id is not None
+
+   tasks = db(db.task.release_id == release_id).select()
+   num_tasks = len(tasks)
+   done_sum = 0
+
+   if not num_tasks: return 100
+
+   for task in tasks:
+      done_percent = get_done_percent(task.id, task.done)
+      done_sum += done_percent / 100
+
+   return done_sum / num_tasks * 100
 
 
 # create a task in a given release

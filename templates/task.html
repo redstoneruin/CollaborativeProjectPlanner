@@ -4,6 +4,12 @@
 [v-cloak] {
      display: none;
 }
+.vue-button {
+   cursor: pointer;
+}
+.done-bar {
+   transition: ease 0.2s all;
+}
 </style>
 
 
@@ -16,12 +22,28 @@
       <div class="card">
          <h1 class="card-header-title">{{task.task_name}}</h1>
          <div class="card-content">{{task.desc}}</div>
+         <div class="card-content">
+            <progress class="progress done-bar is-primary" 
+               max="100" :value="task.done_percent"></progress>
+         </div>
       </div>
 
       <!-- list of subtasks -->
       <div v-for="subtask in subtasks" class="card mt-3">
          <div class="card-header-title">{{subtask.subtask_name}}</div>
          <div class="card-content">{{subtask.desc}}</div>
+         <!-- done checkbox -->
+         <div class="card-footer level">
+            <i v-if="!subtask.done"
+               class="fa fa-fw fa-square-o is-size-4 m-3 check-box vue-button"
+               @click="set_subtask_done(subtask._idx, true)"></i>
+            <i v-else
+               class="fa fa-fw fa-check-square-o is-size-4 m-3 vue-button"
+               @click="set_subtask_done(subtask._idx, false)"></i>
+            <!-- subtask delete button -->
+            <i class="fa fa-fw fa-trash is-size-4 m-3 has-text-danger vue-button"
+               @click="delete_subtask(subtask._idx)"></i>
+         </div>
       </div>
 
       <!-- add subtask button -->
@@ -44,6 +66,7 @@
                <input v-on:input="validate_subtask"  
                   v-model="subtask_name" 
                   placeholder="Task name"
+                  type="text"
                   class="input"/>
                <span v-if="!name_valid" class="icon is-small is-right">
                   <i class="fa fa-fw has-text-warning 
@@ -57,10 +80,10 @@
 
             <!-- edit form -->
             <div class="mt-3 has-icons-right control">
-               <input v-on:input="validate_subtask"  
+               <textarea v-on:input="validate_subtask"  
                   v-model="subtask_desc" 
                   placeholder="Description"
-                  class="input"/>
+                  class="textarea"></textarea>
                <span v-if="!desc_valid" class="icon is-small is-right">
                   <i class="fa fa-fw has-text-warning 
                   fa-exclamation-triangle"></i>
@@ -119,6 +142,9 @@
 <script>
    let load_task_url = "[[=XML(load_task_url)]]";
    let add_subtask_url = "[[=XML(add_subtask_url)]]";
+   let set_subtask_done_url = "[[=XML(set_subtask_done_url)]]";
+   let task_done_percent_url = "[[=XML(task_done_percent_url)]]";
+   let delete_subtask_url = "[[=XML(delete_subtask_url)]]";
 </script>
 <script src="js/task.js"></script>
 [[end]]

@@ -58,8 +58,11 @@ db.define_table(
    Field('created_time', 'datetime', default=get_time),
    Field('task_name', requires=IS_NOT_EMPTY()),
    Field('due_date', 'date'),
+   Field('done', 'boolean', default=False),
+   Field('done_time', 'datetime'),
    Field('desc', requires=IS_NOT_EMPTY())
 )
+
 
 db.define_table(
    'subtask',
@@ -69,6 +72,7 @@ db.define_table(
    Field('subtask_name', requires=IS_NOT_EMPTY()),
    Field('due_date', 'date'),
    Field('done', 'boolean', default=False),
+   Field('done_time', 'datetime'),
    Field('desc', requires=IS_NOT_EMPTY())
 )
 

@@ -70,18 +70,51 @@ let init = (app) => {
       app.vue.warn_check_inputs = true;
     }
 
+    app.delete_subtask = (idx) => {
+      axios.post(delete_subtask_url, {
+         subtask_id: app.vue.subtasks[idx].id
+      })
+         .then(function(response) {
+            if(response.data.deleted) {
+               app.load_task();
+            }
+         })
+    }
+
     app.validate_subtask = () => {
       if(app.vue.subtask_name.length) app.vue.name_valid = true;
       if(app.vue.subtask_desc.length) app.vue.desc_valid = true;
       app.vue.duedate_valid = true;
     }
 
+    app.set_subtask_done = (idx, done) => {
+      subtask = app.vue.subtasks[idx];
+      axios.post(set_subtask_done_url, {
+         subtask_id: subtask.id,
+         done: done
+      })
+         .then(function(response) {
+            if(response.data.updated) {
+               app.vue.subtasks[idx].done = done;
+               app.update_done_percent();
+            }
+         });
+    }
+
+    app.update_done_percent = () => {
+      axios.get(task_done_percent_url, {
+         params: {task_id: app.vue.task.id}
+      })
+         .then(function(response) {
+            app.vue.task.done_percent = response.data.done_percent;
+         });
+    }
 
     app.load_task = () => {
       axios.get(load_task_url)
          .then(function(response) {
             app.vue.task = response.data.task;
-            app.vue.subtasks = response.data.subtasks;
+            app.vue.subtasks = app.enumerate(response.data.subtasks);
          });
     }
 
@@ -93,7 +126,9 @@ let init = (app) => {
         cancel_adding_subtask: app.cancel_adding_subtask,
         submit_new_subtask: app.submit_new_subtask,
         validate_subtask: app.validate_subtask,
-        submit_new_subtask: app.submit_new_subtask
+        submit_new_subtask: app.submit_new_subtask,
+        set_subtask_done: app.set_subtask_done,
+        delete_subtask: app.delete_subtask
     };
 
     // This creates the Vue instance.

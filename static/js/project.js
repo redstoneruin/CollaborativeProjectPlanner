@@ -217,6 +217,29 @@ let init = (app) => {
          });
     }
 
+    app.set_task_done = (r_idx, t_idx, done) => {
+      task = app.vue.releases[r_idx]._tasks[t_idx];
+
+      axios.post(set_task_done_url, {
+         task_id: task.id,
+         done: done
+      })
+         .then(function(response) {
+            app.vue.releases[r_idx]._tasks[t_idx].done = done;
+            app.update_done_percent(r_idx, t_idx);
+         });
+    }
+
+
+    app.update_done_percent = (r_idx, t_idx) => {
+      axios.get(task_done_percent_url, {
+         params: {task_id: app.vue.releases[r_idx]._tasks[t_idx].id}
+      })
+         .then(function(response) {
+            app.vue.releases[r_idx]._tasks[t_idx].done_percent = response.data.done_percent;
+         });
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
@@ -238,7 +261,9 @@ let init = (app) => {
         release_watcher: app.release_watcher,
 
         redirect_to_edit: app.redirect_to_edit,
-        redirect_to_task: app.redirect_to_task
+        redirect_to_task: app.redirect_to_task,
+
+        set_task_done: app.set_task_done
     };
 
     // This creates the Vue instance.
