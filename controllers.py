@@ -102,7 +102,10 @@ def project(project_id = None):
          get_app_name_url = URL('get_app_name', signer=url_signer),
          delete_task_url = URL('delete_task', signer=url_signer),
          set_task_done_url = URL('set_task_done', signer=url_signer),
-         task_done_percent_url = URL('task_done_percent', signer=url_signer)
+         task_done_percent_url = URL('task_done_percent', signer=url_signer),
+         release_done_percent_url = URL('release_done_percent', signer=url_signer),
+         edit_release_url = URL('edit_release', signer=url_signer),
+         delete_release_url = URL('delete_release', signer=url_signer)
       )
    else:
       redirect(URL('index'))
@@ -142,6 +145,7 @@ def edit_project(project_id = None):
    else:
       redirect(URL('index'))
 
+
 @action('task/<task_id:int>', method=["GET"])
 @action.uses(auth, auth.user, url_signer, 'task.html')
 def task(task_id=None):
@@ -173,12 +177,84 @@ def task(task_id=None):
          add_subtask_url = URL('add_subtask', task_id, signer=url_signer),
          set_subtask_done_url = URL('set_subtask_done', signer=url_signer),
          task_done_percent_url = URL('task_done_percent', signer=url_signer),
-         delete_subtask_url = URL('delete_subtask', signer=url_signer)
+         delete_subtask_url = URL('delete_subtask', signer=url_signer),
+         edit_task_url = URL('edit_task', task_id, signer=url_signer),
+         edit_subtask_url = URL('edit_subtask', signer=url_signer),
+         set_task_done_url = URL('set_task_done', signer=url_signer),
+         delete_task_url=URL('delete_task', signer=url_signer),
+
+         project_url = URL('project', project.id)
       )
 
 
    redirect(URL('index'))
 
+# edit a task
+@action('edit_task/<task_id:int>', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def edit_task(task_id=None):
+   assert task_id is not None
+   task_name = request.json.get('name')
+   desc = request.json.get('desc')
+   due_date = request.json.get('duedate')
+
+   assert task_name is not None and desc is not None
+
+   db(db.task.id == task_id).update(
+      task_name=task_name,
+      desc=desc,
+      due_date=due_date
+   )
+
+   return dict(edited=True)
+
+@action('edit_subtask', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def edit_subtask():
+   subtask_id = request.json.get('subtask_id')
+   subtask_name = request.json.get('name')
+   desc = request.json.get('desc')
+   due_date = request.json.get('duedate')
+
+   assert subtask_id is not None
+   assert subtask_name is not None 
+   assert desc is not None
+
+   db(db.subtask.id == subtask_id).update(
+      subtask_name=subtask_name,
+      desc=desc,
+      due_date=due_date
+   )
+
+   return dict(edited=True)
+
+@action('edit_release', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def edit_release():
+   release_id = request.json.get('release_id')
+   release_name = request.json.get('name')
+   due_date = request.json.get('duedate')
+   assert release_id is not None
+   assert release_name is not None
+   assert due_date is not None
+
+   db(db.release.id == release_id).update(
+      release_name=release_name,
+      due_date=due_date   
+   )
+
+   return dict(edited=True)
+
+@action('delete_release', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def delete_release():
+   release_id = request.json.get('release_id')
+
+   assert release_id is not None
+
+   db(db.release.id == release_id).delete()
+
+   return dict(deleted=True) 
 
 # load a single task and subtasks
 @action('load_task/<task_id:int>', method=["GET"])
@@ -239,6 +315,18 @@ def task_done_percent():
    assert task is not None
 
    done_percent = get_done_percent(task_id, task.done)
+
+   return dict(done_percent=done_percent)
+
+@action('release_done_percent', method=["GET"])
+@action.uses(auth, auth.user, url_signer.verify())
+def release_done_percent():
+   release_id = request.params.get('release_id')
+   assert release_id is not None
+   release = db.release[release_id]
+   assert release is not None
+
+   done_percent = get_release_done_percent(release_id)
 
    return dict(done_percent=done_percent)
 

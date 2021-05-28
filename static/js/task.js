@@ -11,6 +11,11 @@ let init = (app) => {
         task: null,
         subtasks: [],
 
+        editing_task: false,
+        task_name: "",
+        task_desc: "",
+        task_duedate: "",
+
         adding_subtask: false,
         subtask_name: "",
         subtask_desc: "",
@@ -20,7 +25,12 @@ let init = (app) => {
         desc_valid: false,
         duedate_valid: true,
 
-        warn_check_inputs: false
+        edited_name_valid: true,
+        edited_desc_valid: true,
+        edited_duedate_valid: true,
+
+        warn_check_inputs: false,
+        warn_check_edit_inputs: false,
     };
 
     app.enumerate = (a) => {
@@ -30,10 +40,149 @@ let init = (app) => {
         return a;
     };
 
-    app.set_adding_subtask = (adding_subtask) => {
-      app.vue.adding_subtask = adding_subtask;
+    app.decorate_subtasks = (a) => {
+      a.map((e) => {
+         e.edited_name = e.subtask_name;
+         e.edited_duedate = e.due_date;
+         e.edited_desc = e.desc;
+
+         e.name_valid = true;
+         e.desc_valid = true;
+         e.duedate_valid = true;
+
+         e.editing = false;
+         e.warn_check_inputs = false;
+      });
+      return a;
     }
 
+
+    app.set_editing_task = (adding) => {
+      app.vue.editing_task = adding;
+    }
+
+    app.cancel_editing_task = () => {
+      t = app.vue.task;
+      app.vue.task_name = t.task_name;
+      app.vue.task_desc = t.desc;
+      app.vue.task_duedate = t.due_date;
+
+      app.vue.edited_name_valid = true;
+      app.vue.edited_desc_valid = true;
+      app.vue.edited_duedate_valid = true;
+
+      app.vue.warn_check_edit_inputs = false;
+      app.vue.editing_task = false;
+
+    }
+
+    // validate the edit form for task
+    app.validate_edited_task = () => {
+      if(!app.vue.task_name.length) {
+         app.vue.edited_name_valid = false;
+      } else {
+         app.vue.edited_name_valid = true;
+      }
+      if(!app.vue.task_desc.length) {
+         app.vue.edited_desc_valid = false;
+      } else {
+         app.vue.edited_desc_valid = true;
+      }
+
+      app.vue.edited_duedate_valid = true;
+    }
+
+    // publish the edit to a task, given inputs valid
+    app.edit_task = () => {
+      if(!app.vue.edited_name_valid
+         || !app.vue.edited_desc_valid
+         || !app.vue.edited_duedate_valid) {
+         app.vue.warn_check_edit_inputs = true;
+         return;
+      }
+
+      axios.post(edit_task_url, {
+         name: app.vue.task_name,
+         desc: app.vue.task_desc,
+         duedate: app.vue.task_duedate
+      })
+         .then(function(response) {
+            if(response.data.edited) {
+               app.load_task();
+               app.cancel_editing_task();
+            }
+         })
+    }
+
+    // set the openness of the edit form for a particular subtask
+    app.set_editing_subtask = (idx, editing) => {
+      app.vue.subtasks[idx].editing = editing;
+    }
+
+    // cancel editing a particular subtask
+    app.cancel_editing_subtask = (idx) => {
+      s = app.vue.subtasks[idx];
+
+      app.vue.subtasks[idx].edited_name = s.subtask_name;
+      app.vue.subtasks[idx].edited_duedate = s.due_date;
+      app.vue.subtasks[idx].edited_desc = s.desc;
+
+      app.vue.subtasks[idx].name_valid = true;
+      app.vue.subtasks[idx].desc_valid = true;
+      app.vue.subtasks[idx].duedate_valid = true;
+
+      app.vue.subtasks[idx].editing = false;
+      app.vue.subtasks[idx].warn_check_inputs = false;
+    }
+
+    app.validate_edited_subtask = (idx) => {
+      s = app.vue.subtasks[idx];
+      if(s.edited_name.length) {
+         app.vue.subtasks[idx].name_valid = true;
+      } else {
+         app.vue.subtasks[idx].name_valid = false;
+      }
+
+      if(s.edited_desc.length) {
+         app.vue.subtasks[idx].desc_valid = true;
+      } else {
+         app.vue.subtasks[idx].desc_valid = false;
+      }
+
+      app.vue.subtasks[idx].duedate_valid = true;
+    }
+
+    // submit an edited subtask
+    app.edit_subtask = (idx) => {
+      app.validate_edited_subtask(idx);
+      s = app.vue.subtasks[idx];
+      if(!s.name_valid || !s.desc_valid || !s.duedate_valid) {
+         app.vue.subtasks[idx].warn_check_inputs = true;
+         return;
+      }
+
+      axios.post(edit_subtask_url, {
+         subtask_id: s.id,
+         name: s.edited_name,
+         desc: s.edited_desc,
+         duedate: s.edited_duedate
+      })
+         .then(function(response) {
+            if(response.data.edited) {
+               app.cancel_editing_subtask(idx);
+               app.load_task();
+            } else {
+               app.vue.subtasks[idx].warn_check_inputs = true;
+            }
+         })
+    }
+
+    // set whether form for adding task is open
+    app.set_adding_subtask = (adding) => {
+      app.vue.adding_subtask = adding;
+    }
+
+    // cancel the form for adding a new subtask
     app.cancel_adding_subtask = () => {
       app.vue.adding_subtask = false;
 
@@ -48,6 +197,7 @@ let init = (app) => {
       app.vue.warn_check_inputs = false;
     }
 
+    // add a new subtask, update list
     app.submit_new_subtask = () => {
       if(!app.vue.name_valid
          || !app.vue.desc_valid
@@ -70,6 +220,7 @@ let init = (app) => {
       app.vue.warn_check_inputs = true;
     }
 
+    // delete a subtask, update list
     app.delete_subtask = (idx) => {
       axios.post(delete_subtask_url, {
          subtask_id: app.vue.subtasks[idx].id
@@ -81,12 +232,30 @@ let init = (app) => {
          })
     }
 
+    // validate form for adding subtask
     app.validate_subtask = () => {
       if(app.vue.subtask_name.length) app.vue.name_valid = true;
+      else app.vue.name_valid = false;
       if(app.vue.subtask_desc.length) app.vue.desc_valid = true;
+      else app.vue.desc_valid = false;
       app.vue.duedate_valid = true;
     }
 
+    // set the task's doneness
+    app.set_task_done = (done) => {
+      axios.post(set_task_done_url, {
+         task_id: app.vue.task.id,
+         done: done
+      })
+         .then(function(response) {
+            if(response.data.updated) {
+               app.vue.task.done = done;
+               app.update_done_percent();
+            }
+         });
+    }
+
+    // set a subtask's doneness, update task progress
     app.set_subtask_done = (idx, done) => {
       subtask = app.vue.subtasks[idx];
       axios.post(set_subtask_done_url, {
@@ -101,6 +270,7 @@ let init = (app) => {
          });
     }
 
+    // update the progress bar for the task
     app.update_done_percent = () => {
       axios.get(task_done_percent_url, {
          params: {task_id: app.vue.task.id}
@@ -110,14 +280,30 @@ let init = (app) => {
          });
     }
 
+    // load task and subtasks
     app.load_task = () => {
       axios.get(load_task_url)
          .then(function(response) {
             app.vue.task = response.data.task;
-            app.vue.subtasks = app.enumerate(response.data.subtasks);
+            app.vue.subtasks = app.decorate_subtasks(
+               app.enumerate(response.data.subtasks)
+            );
+            app.cancel_editing_task();
          });
+    
+   }
+  
+   // delete the task 
+    app.delete_task = () => {
+      axios.post(delete_task_url, {
+         task_id: app.vue.task.id
+      })
+         .then(function(response) {
+            if(response.data.deleted) {
+               window.location.href = project_url; 
+            }
+         })
     }
-
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
@@ -128,7 +314,21 @@ let init = (app) => {
         validate_subtask: app.validate_subtask,
         submit_new_subtask: app.submit_new_subtask,
         set_subtask_done: app.set_subtask_done,
-        delete_subtask: app.delete_subtask
+        delete_subtask: app.delete_subtask,
+
+        set_editing_task: app.set_editing_task,
+        cancel_editing_task: app.cancel_editing_task,
+        validate_edited_task: app.validate_edited_task,
+        edit_task: app.edit_task,
+        
+
+        set_editing_subtask: app.set_editing_subtask,
+        cancel_editing_subtask: app.cancel_editing_subtask,
+        validate_edited_subtask: app.validate_edited_subtask,
+        edit_subtask: app.edit_subtask,
+        set_task_done: app.set_task_done,
+
+        delete_task: app.delete_task
     };
 
     // This creates the Vue instance.

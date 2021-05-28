@@ -41,9 +41,81 @@ let init = (app) => {
          e._warn_check_inputs = false;
 
          e._tasks = [];
+
+         e._editing = false;
+
+         e._edited_name = e.release_name;
+         e._edited_duedate = e.due_date;
+         e._warn_check_edit_inputs = false;
+
+         e._edited_name_valid = true;
+         e._edited_duedate_valid = true;
       });
 
       return a;
+    }
+
+    app.set_editing_release = (idx, editing) => {
+      app.vue.releases[idx]._editing = editing;
+    }
+
+    app.cancel_release_edit = (idx) => {
+      r = app.vue.releases[idx];
+      app.vue.releases[idx]._edited_name = r.release_name;
+      app.vue.releases[idx]._edited_duedate = r.due_date;
+      app.vue.releases[idx]._edited_name_valid = true;
+      app.vue.releases[idx]._edited_duedate_valid = true;
+
+      app.vue.releases[idx]._warn_check_edit_inputs = false;
+      app.vue.releases[idx]._editing = false;
+    }
+
+    app.validate_edited_release = (idx) => {
+      r = app.vue.releases[idx];
+      if(r._edited_name.length) {
+         app.vue.releases[idx]._edited_name_valid = true;
+      } else {
+         app.vue.releases[idx]._edited_name_valid = false;
+      }
+
+      if(r._edited_duedate) {
+         app.vue.releases[idx]._edited_duedate_valid = true;
+      } else {
+         app.vue.releases[idx]._edited_duedate_valid = false;
+      }
+    }
+
+    app.edit_release = (idx) => {
+      r = app.vue.releases[idx];
+      app.validate_edited_release(idx);
+      if(!r._edited_name_valid || !r._edited_duedate_valid) {
+         app.vue.releases[idx]._warn_check_edit_inputs = true;
+         return;
+      }
+
+      axios.post(edit_release_url, {
+         release_id: r.id,
+         name: r._edited_name,
+         duedate: r._edited_duedate
+      })
+         .then(function(response) {
+            if(response.data.edited) {
+               app.vue.releases[idx].release_name = r._edited_name;
+               app.vue.releases[idx].due_date = r._edited_duedate;
+               app.cancel_release_edit(idx);
+            } else {
+               app.vue.releases[idx]._warn_check_edit_inputs = true;
+            }
+         });
+    }
+
+    app.delete_release = (idx) => {
+      axios.post(delete_release_url, {
+         release_id: app.vue.releases[idx].id
+      })
+         .then(function(response) {
+            app.load_project();
+         })
     }
 
     app.load_tasks = (idx) => {
@@ -135,6 +207,7 @@ let init = (app) => {
          }).then(function(response) {
             app.cancel_task_add(idx);
             app.load_tasks(idx);
+            app.update_release_done_percent(idx);
          });
       }
     }
@@ -214,6 +287,7 @@ let init = (app) => {
       axios.post(delete_task_url, {task_id: task_id})
          .then(function(response) {
             app.load_tasks(idx);
+            app.update_release_done_percent(idx);
          });
     }
 
@@ -227,6 +301,7 @@ let init = (app) => {
          .then(function(response) {
             app.vue.releases[r_idx]._tasks[t_idx].done = done;
             app.update_done_percent(r_idx, t_idx);
+            app.update_release_done_percent(r_idx);
          });
     }
 
@@ -238,6 +313,16 @@ let init = (app) => {
          .then(function(response) {
             app.vue.releases[r_idx]._tasks[t_idx].done_percent = response.data.done_percent;
          });
+    }
+
+    app.update_release_done_percent = (idx) => {
+      release = app.vue.releases[idx];
+      axios.get(release_done_percent_url, {
+         params: {release_id: release.id}
+      })
+         .then(function(response) {
+            app.vue.releases[idx].done_percent = response.data.done_percent;
+         })
     }
 
     // This contains all the methods.
@@ -263,7 +348,13 @@ let init = (app) => {
         redirect_to_edit: app.redirect_to_edit,
         redirect_to_task: app.redirect_to_task,
 
-        set_task_done: app.set_task_done
+        set_task_done: app.set_task_done,
+
+        set_editing_release: app.set_editing_release,
+        cancel_release_edit: app.cancel_release_edit,
+        validate_edited_release: app.validate_edited_release,
+        edit_release: app.edit_release,
+        delete_release: app.delete_release
     };
 
     // This creates the Vue instance.
