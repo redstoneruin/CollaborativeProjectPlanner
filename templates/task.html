@@ -314,6 +314,49 @@
 
          </div>
       </div>
+
+      <div class="mt-4 is-size-4 is-bold">Comments</div>
+      <div v-if="!adding_comment"
+         class="button has-background-info has-text-white mr-3 my-3"
+         @click="set_adding_comment(true)">
+         <i class="fa fa-fw fa-plus"></i>
+      </div>
+
+      <div v-else>
+         <div class="mt-3 has-icons-right control">
+            <textarea v-on:input="validate_comment"  
+               v-model="comment_data" 
+               placeholder="Description"
+               class="textarea"></textarea>
+            <span v-if="!comment_valid" class="icon is-small is-right">
+               <i class="fa fa-fw has-text-warning 
+               fa-exclamation-triangle"></i>
+            </span>
+            <span v-else class="icon is-small is-right">
+               <i class="fa fa-fw has-text-success
+               fa-check"></i>
+            </span>
+         </div>
+         <div class="level">
+            <div class="level-left">
+               <div class="button has-background-success has-text-white mr-3 my-3"
+                  @click="post_comment">
+                  <i class="fa fa-fw fa-check"></i>
+               </div>
+               <div class="button has-background-danger has-text-white mr-3 my-3"
+                  @click="cancel_adding_comment">
+                  <i class="fa fa-fw fa-times"></i>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- the actual comments -->
+      <div v-for="comment in comments"
+         class="box mt-3">
+         {{comment.data}}
+      </div>
+
    </div>
 </div>
 
@@ -331,6 +374,8 @@
    let delete_task_url = "[[=XML(delete_task_url)]]";
 
    let project_url = "[[=XML(project_url)]]";
+   let get_comments_url = "[[=XML(get_comments_url)]]";
+   let post_comment_url = "[[=XML(post_comment_url)]]";
 </script>
 <script src="js/task.js"></script>
 [[end]]

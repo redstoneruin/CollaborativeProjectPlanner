@@ -183,11 +183,48 @@ def task(task_id=None):
          set_task_done_url = URL('set_task_done', signer=url_signer),
          delete_task_url=URL('delete_task', signer=url_signer),
 
-         project_url = URL('project', project.id)
+         project_url = URL('project', project.id),
+         get_comments_url = URL('get_comments', task_id, signer=url_signer),
+         post_comment_url = URL('post_comment', task_id, signer=url_signer)
       )
 
 
    redirect(URL('index'))
+
+
+@action('get_comments/<task_id:int>', method=["GET"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_comments(task_id=None):
+   assert task_id is not None
+
+   comments = db(db.task_comment.task_id == task_id).select(orderby=~db.task_comment.timestamp).as_list()
+
+   return dict(comments=comments)
+
+@action('post_comment/<task_id:int>', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def post_comment(task_id=None):
+   assert task_id is not None
+
+   data=request.json.get('data')
+
+   assert data is not None
+   assert len(data)
+
+   db.task_comment.insert(
+      task_id=task_id,
+      data=data
+   )
+
+   return dict(posted=True)
+
+@action('delete_comment/<task_id:int>', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def delete_comment(task_id=None):
+   assert task_id is not None
+
+   
+
 
 # edit a task
 @action('edit_task/<task_id:int>', method=["POST"])
@@ -262,7 +299,7 @@ def delete_release():
 def load_task(task_id=None):
    assert task_id is not None
 
-   task = db(db.task.id == task_id).select().as_list()[0]
+   task = db(db.task.id == task_id).select().first().as_dict()
    subtasks = db(db.subtask.task_id == task_id).select().as_list()
 
    # decorate task with doneness

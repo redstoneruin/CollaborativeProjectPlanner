@@ -81,8 +81,8 @@ db.define_table(
 db.define_table(
    'task_comment',
    Field('task_id', 'reference task'),
-   Field('created_by', default=get_user_id),
-   Field('created_time', default=get_time),
+   Field('author', default=get_user_id),
+   Field('timestamp', default=get_time),
    Field('data', requires=IS_NOT_EMPTY())
 )
 

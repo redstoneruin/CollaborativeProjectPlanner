@@ -31,6 +31,12 @@ let init = (app) => {
 
         warn_check_inputs: false,
         warn_check_edit_inputs: false,
+
+
+        comments: [],
+        adding_comment: false,
+        comment_data: "",
+        comment_valid: false
     };
 
     app.enumerate = (a) => {
@@ -54,6 +60,45 @@ let init = (app) => {
          e.warn_check_inputs = false;
       });
       return a;
+    }
+
+    app.set_adding_comment = (adding) => {
+      app.vue.adding_comment = adding;
+    }
+
+    app.cancel_adding_comment = (adding) => {
+      app.vue.comment_data = "";
+      app.vue.adding_comment = false;
+    }
+
+    app.validate_comment = () => {
+      if(app.vue.comment_data.length) {
+         app.vue.comment_valid = true;
+      } else {
+         app.vue.comment_valid = false;
+      }
+    }
+
+    app.load_comments = () => {
+      axios.get(get_comments_url)
+         .then(function(response) {
+            app.vue.comments = response.data.comments;
+            console.log(response.data.comments);
+         });
+    }
+
+    app.post_comment = () => {
+      if(!app.vue.comment_valid) return;
+
+      axios.post(post_comment_url, {
+         data: app.vue.comment_data
+      })
+         .then(function(response) {
+            if(response.data.posted) {
+               app.cancel_adding_comment();
+               app.load_comments();
+            }
+         });
     }
 
 
@@ -328,7 +373,13 @@ let init = (app) => {
         edit_subtask: app.edit_subtask,
         set_task_done: app.set_task_done,
 
-        delete_task: app.delete_task
+        delete_task: app.delete_task,
+
+        validate_comment: app.validate_comment,
+        set_adding_comment: app.set_adding_comment,
+        cancel_adding_comment: app.cancel_adding_comment,
+        load_comments: app.load_comments,
+        post_comment: app.post_comment
     };
 
     // This creates the Vue instance.
@@ -343,6 +394,7 @@ let init = (app) => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
       app.load_task();
+      app.load_comments();
     };
 
     // Call to the initializer.
