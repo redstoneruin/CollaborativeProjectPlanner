@@ -9,6 +9,7 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         project: null,
+        user: null,
         releases: [],
         adding_release: false,
         new_release_name: "",
@@ -53,6 +54,13 @@ let init = (app) => {
       });
 
       return a;
+    }
+
+    app.get_user_info = () => {
+      axios.get(get_user_info_url)
+         .then(function(response) {
+            app.vue.user = response.data.user
+         });
     }
 
     app.set_editing_release = (idx, editing) => {
@@ -372,6 +380,7 @@ let init = (app) => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
         app.load_project();
+        app.get_user_info();
     };
 
     // Call to the initializer.

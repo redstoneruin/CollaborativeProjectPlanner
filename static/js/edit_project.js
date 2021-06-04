@@ -73,7 +73,7 @@ let init = (app) => {
          return "Planner";
       } else if(perm == 2) {
          return "Admin";
-      } else if (perm == -1) {
+      } else if (perm == 10) {
          return "Owner";
       }
       return "Invalid";

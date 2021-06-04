@@ -15,7 +15,7 @@
 
 <div class="section" id="vue-target" v-cloak>
    
-   <div v-if="!task">
+   <div v-if="task == null || user == null">
       <progress class="progress is-medium is-primary mx-6" max="100"></progress>
    </div>
    <div v-else>
@@ -34,13 +34,15 @@
                <!-- task progress bar -->
                <progress class="m-3 progress done-bar is-primary" 
                   max="100" :value="task.done_percent"></progress>
-               <!-- task edit button -->
-               <i class="m-3 fa fa-fw fa-pencil-square-o 
-                  has-text-warning is-size-4 vue-button"
-                  @click="set_editing_task(true)"></i>
-               <!-- task delete button -->
-               <i class="fa fa-fw fa-trash is-size-4 m-3 has-text-danger vue-button"
-                  @click="delete_task()"></i>
+               <div v-if="user.perms > 0">
+                  <!-- task edit button -->
+                  <i class="m-3 fa fa-fw fa-pencil-square-o 
+                     has-text-warning is-size-4 vue-button"
+                     @click="set_editing_task(true)"></i>
+                  <!-- task delete button -->
+                  <i class="fa fa-fw fa-trash is-size-4 m-3 has-text-danger vue-button"
+                     @click="delete_task()"></i>
+               </div>
             </div>
          </div>
       </div>
@@ -355,6 +357,17 @@
       <div v-for="comment in comments"
          class="box mt-3">
          {{comment.data}}
+         <div class="mt-2 level">
+            <i class="level-item has-text-grey is-justify-content-flex-start">
+               {{comment.name}}
+            </i>
+            <div class="level-item is-justify-content-flex-end">
+               <!-- comment delete button -->
+               <i v-if="user.id == comment.author"
+                  class="fa fa-fw fa-trash is-size-5 m-3 has-text-danger vue-button"
+                  @click="delete_comment(comment._idx)"></i>
+            </div>
+         </div>
       </div>
 
    </div>
@@ -376,6 +389,8 @@
    let project_url = "[[=XML(project_url)]]";
    let get_comments_url = "[[=XML(get_comments_url)]]";
    let post_comment_url = "[[=XML(post_comment_url)]]";
+   let delete_comment_url = "[[=XML(delete_comment_url)]]";
+   let get_user_info_url = "[[=XML(get_user_info_url)]]";
 </script>
 <script src="js/task.js"></script>
 [[end]]

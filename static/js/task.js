@@ -9,6 +9,7 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         task: null,
+        user: null,
         subtasks: [],
 
         editing_task: false,
@@ -82,8 +83,7 @@ let init = (app) => {
     app.load_comments = () => {
       axios.get(get_comments_url)
          .then(function(response) {
-            app.vue.comments = response.data.comments;
-            console.log(response.data.comments);
+            app.vue.comments = app.enumerate(response.data.comments);
          });
     }
 
@@ -101,6 +101,30 @@ let init = (app) => {
          });
     }
 
+
+    app.delete_comment = (idx) => {
+      var comment = app.vue.comments[idx];
+      var comment_id = comment.id;
+
+      // check whether the post belongs to the user
+      if(app.vue.user.id != comment.author) return;
+
+      axios.post(delete_comment_url, {
+         comment_id: comment_id
+      })
+         .then(function(response) {
+            if(response.data.deleted) {
+               app.load_comments();
+            }
+         });
+    }
+
+    app.get_user_info = () => {
+      axios.get(get_user_info_url)
+         .then(function(response) {
+            app.vue.user = response.data.user;
+         });
+    }
 
     app.set_editing_task = (adding) => {
       app.vue.editing_task = adding;
@@ -246,8 +270,10 @@ let init = (app) => {
     app.submit_new_subtask = () => {
       if(!app.vue.name_valid
          || !app.vue.desc_valid
-         || !app.vue.duedate_valid)
-         app.vue.warn_check_inputs
+         || !app.vue.duedate_valid) {
+         app.vue.warn_check_inputs = true;
+         return;
+      }
 
       axios.post(add_subtask_url, {
          name: app.vue.subtask_name,
@@ -262,7 +288,6 @@ let init = (app) => {
                app.vue.warn_check_inputs = true;
             }
          });
-      app.vue.warn_check_inputs = true;
     }
 
     // delete a subtask, update list
@@ -379,7 +404,8 @@ let init = (app) => {
         set_adding_comment: app.set_adding_comment,
         cancel_adding_comment: app.cancel_adding_comment,
         load_comments: app.load_comments,
-        post_comment: app.post_comment
+        post_comment: app.post_comment,
+        delete_comment: app.delete_comment
     };
 
     // This creates the Vue instance.
@@ -395,6 +421,7 @@ let init = (app) => {
         // Typically this is a server GET call to load the data.
       app.load_task();
       app.load_comments();
+      app.get_user_info();
     };
 
     // Call to the initializer.

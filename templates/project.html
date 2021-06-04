@@ -24,7 +24,7 @@
 
 <div class="section" id="vue-target" v-cloak>
    
-   <div v-if="project == null">
+   <div v-if="project == null || user == null">
       <progress class="progress is-medium is-primary mx-6" max="100">15%</progress>
    </div>
    <div v-else>
@@ -32,7 +32,8 @@
          <h1 class="title">{{project.project_name}}</h1>
 
          <!-- edit button -->      
-         <div class="button has-background-warning has-text-white mr-3 my-3"
+         <div v-if="user.perms > 1"
+            class="button has-background-warning has-text-white mr-3 my-3"
             @click="redirect_to_edit">
             <i class="fa fa-fw fa-cog"></i>
          </div>
@@ -86,7 +87,8 @@
                            @click="set_task_done(release._idx, task._idx, false)"></i>
                         
                         <!-- delete task button -->
-                        <i class="fa fa-fw fa-trash m-2 is-size-4 has-text-danger vue-button"
+                        <i v-if="user.perms > 0"
+                           class="fa fa-fw fa-trash m-2 is-size-4 has-text-danger vue-button"
                            @click="delete_task(release._idx, task.id)"></i>
                      </div>
                   </div>
@@ -96,11 +98,13 @@
                   </div>
 
                   <!-- add task button -->
-                  <div v-if="!release._adding_task"
-                     class="button has-background-success has-text-white mr-3 my-3"
-                     @click="set_adding_task(true, release._idx)">
-                     <i class="fa fa-fw fa-plus"></i>
-                     Add Task
+                  <div v-if="!release._adding_task">
+                     <div v-if="user.perms > 0"
+                        class="button has-background-success has-text-white mr-3 my-3"
+                        @click="set_adding_task(true, release._idx)">
+                           <i class="fa fa-fw fa-plus"></i>
+                           Add Task
+                     </div>
                   </div>
 
                   <div v-else class="card">
@@ -190,7 +194,7 @@
                   <div class="card-footer-item m-3">
                      Due {{(new Date(release.due_date)).toLocaleDateString()}}
                   </div>
-                  <div class="card-footer-item m-3">                  
+                  <div v-if="user.perms > 1" class="card-footer-item m-3">                  
                      <!-- subtask edit button -->
                      <i class="m-3 fa fa-fw fa-pencil-square-o 
                         has-text-warning is-size-4 vue-button"
@@ -269,11 +273,13 @@
             
          <!-- add button, visible if not currently adding --->
          <div class="column">    
-            <div v-if="!adding_release" 
-               class="button has-background-success has-text-white mr-3 my-3"
-               @click="set_adding_release(true)">
-               <i class="fa fa-fw fa-plus"></i>
-               Add Release
+            <div v-if="!adding_release">
+               <div v-if="user.perms > 1" 
+                  class="button has-background-success has-text-white mr-3 my-3"
+                  @click="set_adding_release(true)">
+                  <i class="fa fa-fw fa-plus"></i>
+                  Add Release
+               </div>
             </div>
 
             <div v-else class="card">
@@ -356,6 +362,7 @@
    let release_done_percent_url = "[[=XML(release_done_percent_url)]]";
    let edit_release_url = "[[=XML(edit_release_url)]]";
    let delete_release_url = "[[=XML(delete_release_url)]]";
+   let get_user_info_url = "[[=XML(get_user_info_url)]]";
 </script>
 <script src="js/project.js"></script>
 [[end]]
