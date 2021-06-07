@@ -23,7 +23,7 @@
          <h1 class="card-header-title">{{task.task_name}}</h1>
          <div class="card-content">{{task.desc}}</div>
          <div class="card-footer level">
-            <div class="level-item">
+            <div class="card-footer-item">
                <!-- task done checkbox -->
                <i v-if="!task.done"
                   class="fa fa-fw fa-square-o is-size-4 m-3 check-box vue-button"
@@ -34,15 +34,18 @@
                <!-- task progress bar -->
                <progress class="m-3 progress done-bar is-primary" 
                   max="100" :value="task.done_percent"></progress>
-               <div v-if="user.perms > 0">
-                  <!-- task edit button -->
-                  <i class="m-3 fa fa-fw fa-pencil-square-o 
-                     has-text-warning is-size-4 vue-button"
-                     @click="set_editing_task(true)"></i>
-                  <!-- task delete button -->
-                  <i class="fa fa-fw fa-trash is-size-4 m-3 has-text-danger vue-button"
-                     @click="delete_task()"></i>
-               </div>
+            </div>
+            <div class="card-footer-item" v-if="task.due_date">
+               Due {{(new Date(task.due_date)).toLocaleDateString()}}
+            </div>
+            <div v-if="user.perms > 0" class="card-footer-item is-justify-content-flex-end">
+               <!-- task edit button -->
+               <i class="m-3 fa fa-fw fa-pencil-square-o 
+                  has-text-warning is-size-4 vue-button"
+                  @click="set_editing_task(true)"></i>
+               <!-- task delete button -->
+               <i class="fa fa-fw fa-trash is-size-4 m-3 has-text-danger vue-button"
+                  @click="delete_task()"></i>
             </div>
          </div>
       </div>
@@ -138,6 +141,9 @@
                <i v-else
                   class="fa fa-fw fa-check-square-o is-size-4 m-3 vue-button"
                   @click="set_subtask_done(subtask._idx, false)"></i>
+               <div v-if="subtask.due_date">
+                  Due {{(new Date(task.due_date)).toLocaleDateString()}}
+               </div>
                <div>
                   <!-- subtask edit button -->
                   <i class="m-3 fa fa-fw fa-pencil-square-o 
