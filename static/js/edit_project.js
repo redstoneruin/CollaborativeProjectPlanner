@@ -157,6 +157,22 @@ let init = (app) => {
       });
     }
 
+    app.delete_member = (idx) => {
+      var member = app.vue.members[idx];
+      // dont delete if owner
+      if(member.permissions == 10) return;
+
+      axios.post(delete_member_url, {
+         member_id: member.member_id
+      })
+         .then(function(response) {
+            if(response.data.deleted) {
+               app.load_members();
+            }
+         });
+
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
@@ -169,7 +185,8 @@ let init = (app) => {
         cancel_member_add: app.cancel_member_add,
         set_permissions: app.set_permissions,
         add_member: app.add_member,
-        get_perm_name: app.get_perm_name
+        get_perm_name: app.get_perm_name,
+        delete_member: app.delete_member
     };
 
     // This creates the Vue instance.

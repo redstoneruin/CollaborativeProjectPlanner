@@ -26,17 +26,7 @@
          <i class="fa fa-fw fa-plus"></i>
          Create Project
       </a>
-      <!-- search bar -->
-      <span class="field level-item">
-         <div class="control has-icons-right" style="width:100%">
-            <input class="input" type="text" placeholder="Search" />
-            <span class="icon is-small is-right">
-               <i class="fa fa-fw fa-search"></i>
-            </span>
-         </div>
-      </span> 
    </div>
-
 
    <span>
       <p class="is-size-4">Your Projects</p>
@@ -47,7 +37,7 @@
    </div>
 
    <!-- Columns for each project owned -->
-   <div class="columns mt-3 testclass">
+   <div class="columns mt-3">
       <div v-for="project in myprojects" class="column">
          <div class="card pt-3 project-card" @click="redirect_to_project(project.id)">
             <div class="card-header-title mx-2">
@@ -72,7 +62,7 @@
       </span>
 
       <!-- Columns for each project owned -->
-      <div class="columns mt-3 testclass">
+      <div class="columns mt-3">
          <div v-for="project in memberprojects" class="column">
             <div class="card pt-3 project-card" @click="redirect_to_project(project.id)">
                <div class="card-header-title mx-2">
@@ -91,6 +81,7 @@
          </div>
       </div>
    </div>
+
 
 </div>
 

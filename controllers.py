@@ -126,7 +126,8 @@ def edit_project(project_id = None):
          get_user_email_url = URL('get_user_email', signer=url_signer),
          add_member_url = URL('add_member', project_id, signer=url_signer),
          edit_project_info_url = URL('edit_project_info', project_id, signer=url_signer),
-         get_user_info_url = URL('get_user_info', project_id, signer=url_signer)
+         get_user_info_url = URL('get_user_info', project_id, signer=url_signer),
+         delete_member_url = URL('delete_member', project_id, signer=url_signer)
       )
    else:
       redirect(URL('index'))
@@ -178,6 +179,20 @@ def task(task_id=None):
 
 
    redirect(URL('index'))
+
+# delete a member from a project
+@action('delete_member/<project_id:int>', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def delete_member(project_id=None):
+   assert project_id is not None
+
+   member_id = request.json.get('member_id')
+
+   db((db.member.project_id == project_id) 
+      & (db.member.member_id == member_id)).delete()
+
+   return dict(deleted=True)
+
 
 
 # get the comments for a certain task

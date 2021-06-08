@@ -15,6 +15,9 @@
    border-radius: 5px;
    transition: ease 0.2s all;
 }
+.vue-button {
+   cursor: pointer;
+}
 </style>
 
 <div class="section" id="vue-target" v-cloak>
@@ -84,11 +87,19 @@
                <thead>
                   <th>Email</th>
                   <th>Permissions</th>
+                  <th></th>
                </thead>
                <tbody>
                   <tr v-for="member in members">
                      <td>{{member.email}}</td>
                      <td>{{get_perm_name(member.permissions)}}</td>
+                     <!-- delete button -->
+                     <td>
+
+                        <i v-if="member.permissions < 10" class="fa fa-fw fa-trash is-size-5 
+                           has-text-danger vue-button"
+                           @click="delete_member(member._idx)"></i>
+                     </td>
                   </tr>
             </table>
 
@@ -177,6 +188,7 @@
    let get_user_email_url = "[[=XML(get_user_email_url)]]";
    let add_member_url = "[[=XML(add_member_url)]]";
    let edit_project_info_url = "[[=XML(edit_project_info_url)]]";
+   let delete_member_url = "[[=XML(delete_member_url)]]";
 </script>
 <script src="js/edit_project.js"></script>
 [[end]]

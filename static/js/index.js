@@ -11,7 +11,10 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         myprojects: [],
-        memberprojects: []
+        memberprojects: [],
+        searched_projects: [],
+        is_searching: false,
+        search_field: ""
     };
 
     app.enumerate = (a) => {
@@ -31,10 +34,21 @@ let init = (app) => {
         });
     };
 
+    app.do_search = () => {
+        var search_field = app.vue.search_field;
+        if(!search_field.length) {
+            app.vue.searched_projects = [];
+            app.vue.is_searching = false
+            return;
+        }
+        app.vue.is_searching = true;
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
-        redirect_to_project: app.redirect_to_project
+        redirect_to_project: app.redirect_to_project,
+        do_search: app.do_search
     };
 
     // This creates the Vue instance.
