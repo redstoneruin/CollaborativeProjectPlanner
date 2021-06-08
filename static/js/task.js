@@ -107,7 +107,9 @@ let init = (app) => {
       var comment_id = comment.id;
 
       // check whether the post belongs to the user
-      if(app.vue.user.id != comment.author) return;
+      if(app.vue.user.id != comment.author) {
+         return;
+      }
 
       axios.post(delete_comment_url, {
          comment_id: comment_id

@@ -76,7 +76,16 @@
                   </div>
                </div>
             </div>
+   
+
+            <!-- delete button -->
+            <div class="button has-background-danger has-text-white mr-3 my-3"
+               @click="delete_project">
+               Delete Project
+            </div>
+   
          </div>
+
 
          <!-- right membership column -->
          <div class="column">
@@ -189,6 +198,7 @@
    let add_member_url = "[[=XML(add_member_url)]]";
    let edit_project_info_url = "[[=XML(edit_project_info_url)]]";
    let delete_member_url = "[[=XML(delete_member_url)]]";
+   let delete_project_url = "[[=XML(delete_project_url)]]";
 </script>
 <script src="js/edit_project.js"></script>
 [[end]]

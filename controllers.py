@@ -127,10 +127,13 @@ def edit_project(project_id = None):
          add_member_url = URL('add_member', project_id, signer=url_signer),
          edit_project_info_url = URL('edit_project_info', project_id, signer=url_signer),
          get_user_info_url = URL('get_user_info', project_id, signer=url_signer),
-         delete_member_url = URL('delete_member', project_id, signer=url_signer)
+         delete_member_url = URL('delete_member', project_id, signer=url_signer),
+         delete_project_url = URL('delete_project', project_id, signer=url_signer)
       )
    else:
       redirect(URL('index'))
+
+
 
 # task page
 @action('task/<task_id:int>', method=["GET"])
@@ -179,6 +182,21 @@ def task(task_id=None):
 
 
    redirect(URL('index'))
+
+@action('delete_project/<project_id:int>', method=["POST"])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def delete_project(project_id=None):
+   assert project_id is not None
+
+   user_id = get_user_id()
+   project = db.project[project_id]
+   assert project is not None
+
+   if user_id != project.owner_id:
+      return dict(deleted=False)
+
+   db(db.project.id == project_id).delete()
+   return dict(deleted=True)
 
 # delete a member from a project
 @action('delete_member/<project_id:int>', method=["POST"])
@@ -238,7 +256,9 @@ def delete_comment():
    comment = db.task_comment[comment_id]
 
    user_id = get_user_id()
-   if(comment.author != user_id): return dict(deleted=False)
+   if comment.author != str(user_id): 
+      print(comment, user_id)
+      return dict(deleted=False)
 
    db(db.task_comment.id == comment_id).delete()
 

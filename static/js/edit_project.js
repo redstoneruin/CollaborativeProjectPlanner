@@ -135,6 +135,18 @@ let init = (app) => {
         });
     };
 
+    app.redirect_to_home = () => {
+        axios.get(get_app_name_url).then(function (response) {
+            if(response.data.app_name == '_default') {
+                window.location.href = '/index';
+            } else {
+                window.location.href = '/' 
+                  + response.data.app_name 
+                  + '/index';
+            }
+        });
+    };
+
 
     app.load_members = () => {
       axios.get(load_project_members_url)
@@ -173,6 +185,15 @@ let init = (app) => {
 
     }
 
+    app.delete_project = () => {
+      axios.post(delete_project_url)
+         .then(function(response) {
+            if(response.data.deleted) {
+               app.redirect_to_home();
+            }
+         })
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
@@ -186,7 +207,8 @@ let init = (app) => {
         set_permissions: app.set_permissions,
         add_member: app.add_member,
         get_perm_name: app.get_perm_name,
-        delete_member: app.delete_member
+        delete_member: app.delete_member,
+        delete_project: app.delete_project
     };
 
     // This creates the Vue instance.
