@@ -13,6 +13,7 @@ let init = (app) => {
          project: null,
          releases: [],
          members: [],
+         user: null,
 
          name: "",
          desc: "",
@@ -35,6 +36,15 @@ let init = (app) => {
         a.map((e) => {e._idx = k++;});
         return a;
     };
+   
+    
+    app.get_user_info = () => {
+      axios.get(get_user_info_url)
+         .then(function(response) {
+            app.vue.user = response.data.user
+         });
+    }
+    
 
     app.edit_project = () => {
       if(!app.vue.name_valid || !app.vue.desc_valid) {
@@ -225,6 +235,7 @@ let init = (app) => {
     app.init = () => {
       app.load_project_info();
       app.load_members();
+      app.get_user_info();
     };
 
     // Call to the initializer.
